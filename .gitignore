@@ -136,3 +136,11 @@ exps
 
 # snakemake logs
 .snakemake
+
+
+*.parquet
+
+*.npz
+
+
+*.ckpt

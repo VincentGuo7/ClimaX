@@ -1,0 +1,24 @@
+data:
+  root_dir: finetuning_1.40625deg
+  region: "Eastern Australia"
+  predict_range: 7
+  out_variables: ['stl1', 'slhf', 'u10', 'tclw', 'skt', 'msl', 'cvl', 
+           'v10', 'str', 'tcrw', 'sp', 'ssr', 'tcsw', 'cbh', 'sshf', 'tcc', 'pev', 'stl2', 'tcw', 
+           'd2m', 'tciw', 'tcwv', 'tp', 'cp', 'cvh', 'tco3', 't2m', 'e', 'lsp', 'fg10']  # Or your target variable(s)
+  batch_size: 8
+
+model:
+  pretrained_path: 1.40625deg.ckpt
+  out_vars: ['stl1', 'slhf', 'u10', 'tclw', 'skt', 'msl', 'cvl', 
+           'v10', 'str', 'tcrw', 'sp', 'ssr', 'tcsw', 'cbh', 'sshf', 'tcc', 'pev', 'stl2', 'tcw', 
+           'd2m', 'tciw', 'tcwv', 'tp', 'cp', 'cvh', 'tco3', 't2m', 'e', 'lsp', 'fg10']  # Match out_variables above
+  lr: 5e-7
+  beta_1: 0.9
+  beta_2: 0.99
+  weight_decay: 1e-5
+
+trainer:
+  accelerator: cpu  # Best compatibility for M1
+  devices: 1  # Or more if you use multiple GPUs
+  max_epochs: 50
+  precision: 32
