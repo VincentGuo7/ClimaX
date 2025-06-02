@@ -59,11 +59,11 @@ class RegionalForecastDataModule(LightningDataModule):
         variables,
         buffer_size,
         out_variables=None,
-        region: str = 'NorthAmerica',
+        region: str = 'Eastern Australia',
         predict_range: int = 6,
         hrs_each_step: int = 1,
         batch_size: int = 64,
-        num_workers: int = 0,
+        num_workers: int = 4,
         pin_memory: bool = False,
     ):
         super().__init__()
@@ -200,15 +200,16 @@ class RegionalForecastDataModule(LightningDataModule):
         )
 
     def val_dataloader(self):
-        return DataLoader(
-            self.data_val,
-            batch_size=self.hparams.batch_size,
-            shuffle=False,
-            drop_last=False,
-            num_workers=self.hparams.num_workers,
-            pin_memory=self.hparams.pin_memory,
-            collate_fn=collate_fn_regional,
-        )
+        # return DataLoader(
+        #     self.data_val,
+        #     batch_size=self.hparams.batch_size,
+        #     shuffle=False,
+        #     drop_last=False,
+        #     num_workers=self.hparams.num_workers,
+        #     pin_memory=self.hparams.pin_memory,
+        #     collate_fn=collate_fn_regional,
+        # )
+        return None
 
     def test_dataloader(self):
         return DataLoader(
