@@ -21,6 +21,8 @@ def main():
     )
     os.makedirs(cli.trainer.default_root_dir, exist_ok=True)
 
+    cli.trainer.val_check_interval = None  # or 0
+
     cli.datamodule.set_patch_size(cli.model.get_patch_size())
 
     normalization = cli.datamodule.output_transforms
@@ -29,8 +31,10 @@ def main():
     cli.model.set_denormalization(mean_denorm, std_denorm)
     cli.model.set_lat_lon(*cli.datamodule.get_lat_lon())
     cli.model.set_pred_range(cli.datamodule.hparams.predict_range)
-    cli.model.set_val_clim(cli.datamodule.val_clim)
-    cli.model.set_test_clim(cli.datamodule.test_clim)
+
+    # Disable val/test clim constants if you want
+    cli.model.set_val_clim(None)
+    cli.model.set_test_clim(None)
 
     # fit() runs the training
     cli.trainer.fit(cli.model, datamodule=cli.datamodule)

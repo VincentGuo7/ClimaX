@@ -3,24 +3,23 @@ seed_everything: 42
 # ---------------------------- TRAINER -------------------------------------------
 trainer:
   default_root_dir: ${oc.env:OUTPUT_DIR,/home/t-tungnguyen/ClimaX/exps/regional_forecast_climax}
-  limit_val_batches: 0.0
 
-  precision: 32
+  limit_val_batches: 0
 
-  gpus: 0
+  precision: 16
+
+  gpus: null
   num_nodes: 1
-  accelerator: cpu
-  devices: 1  # Or more if you use multiple GPUs
-  strategy: null
+  accelerator: gpu
+  strategy: ddp
 
   min_epochs: 1
-  max_epochs: 50
+  max_epochs: 100
   enable_progress_bar: true
 
-  sync_batchnorm: False
-  enable_checkpointing: True
+  sync_batchnorm: True
+  enable_checkpointing: false
   resume_from_checkpoint: null
-
 
   # debugging
   fast_dev_run: false
@@ -39,12 +38,6 @@ trainer:
     - class_path: pytorch_lightning.callbacks.LearningRateMonitor
       init_args:
         logging_interval: "step"
-
-    - class_path: pytorch_lightning.callbacks.ModelCheckpoint
-      init_args:
-        dirpath: "${trainer.default_root_dir}/checkpoints"
-        save_last: True
-        save_top_k: 0
 
     # - class_path: pytorch_lightning.callbacks.ModelCheckpoint
     #   init_args:
@@ -77,8 +70,8 @@ model:
   beta_1: 0.9
   beta_2: 0.99
   weight_decay: 1e-5
-  warmup_epochs: 10
-  max_epochs: 50
+  warmup_epochs: 10000
+  max_epochs: 100000
   warmup_start_lr: 1e-8
   eta_min: 1e-8
   pretrained_path: ./pretrained_checkpoints/1.40625deg.ckpt
@@ -105,18 +98,19 @@ model:
 # ---------------------------- DATA -------------------------------------------
 data:
   root_dir: finetuning_1.40625deg
-  variables: [
-    "stl1", "slhf", "u10", "tclw", "skt", "msl", "cvl", 
+  variables: ["stl1", "slhf", "u10", "tclw", "skt", "msl", "cvl", 
     "v10", "str", "tcrw", "sp", "ssr", "tcsw", "cbh", "sshf", 
     "tcc", "pev", "stl2", "tcw", "d2m", "tciw", "tcwv", "tp", 
     "cp", "cvh", "tco3", "t2m", "e", "lsp", "fg10"
   ]
-  out_variables: ['stl1', 'slhf', 'u10', 'tclw', 'skt', 'msl', 'cvl', 
-                    'v10', 'str', 'tcrw', 'sp', 'ssr', 'tcsw', 'cbh', 'sshf', 'tcc', 'pev', 'stl2', 'tcw', 
-                    'd2m', 'tciw', 'tcwv', 'tp', 'cp', 'cvh', 'tco3', 't2m', 'e', 'lsp', 'fg10']  # from your config
+  out_variables: ["stl1", "slhf", "u10", "tclw", "skt", "msl", 
+    "cvl", "v10", "str", "tcrw", "sp", "ssr", "tcsw", "cbh", 
+    "sshf", "tcc", "pev", "stl2", "tcw", "d2m", "tciw", "tcwv", 
+    "tp", "cp", "cvh", "tco3", "t2m", "e", "lsp", "fg10"
+  ]
   # region: "Eastern Australia"
   predict_range: 7
   buffer_size: 10000
-  batch_size: 8
-  num_workers: 4
+  batch_size: 128
+  num_workers: 1
   pin_memory: False

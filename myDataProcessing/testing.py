@@ -80,5 +80,23 @@ def main(dataset_root):
 
     print("✅ All checks passed!")
 
+
+    # Path to your .npz file
+    file_path = 'finetuning_1.40625deg/train/lat_-9.00000_lon_137.00000.npz'  # Replace with your actual file path
+
+    # Load the .npz file
+    data = np.load(file_path)
+
+    # Print the names of the arrays in the file
+    print("Arrays in the .npz file:")
+    for key in data.files:
+        print(f"\nArray name: {key}")
+        print("First 5 rows:")
+        print(data[key][:5])  # Show the first 5 rows of each array
+
+    # Close the file after loading (good practice)
+    data.close()
+
+
 if __name__ == "__main__":
     main("finetuning_1.40625deg")  # Replace with your root directory if different

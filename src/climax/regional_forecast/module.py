@@ -96,8 +96,8 @@ class RegionalForecastModule(LightningModule):
     def set_pred_range(self, r):
         self.pred_range = r
 
-    def set_val_clim(self, clim):
-        self.val_clim = clim
+    # def set_val_clim(self, clim):
+    #     self.val_clim = clim
 
     def set_test_clim(self, clim):
         self.test_clim = clim
@@ -124,44 +124,44 @@ class RegionalForecastModule(LightningModule):
 
         return loss
 
-    def validation_step(self, batch: Any, batch_idx: int):
-        x, y, lead_times, variables, out_variables, region_info = batch
+    # def validation_step(self, batch: Any, batch_idx: int):
+    #     x, y, lead_times, variables, out_variables, region_info = batch
 
-        if self.pred_range < 24:
-            log_postfix = f"{self.pred_range}_hours"
-        else:
-            days = int(self.pred_range / 24)
-            log_postfix = f"{days}_days"
+    #     if self.pred_range < 24:
+    #         log_postfix = f"{self.pred_range}_hours"
+    #     else:
+    #         days = int(self.pred_range / 24)
+    #         log_postfix = f"{days}_days"
 
-        all_loss_dicts = self.net.evaluate(
-            x,
-            y,
-            lead_times,
-            variables,
-            out_variables,
-            transform=self.denormalization,
-            metrics=[lat_weighted_mse_val, lat_weighted_rmse, lat_weighted_acc],
-            lat=self.lat,
-            clim=self.val_clim,
-            log_postfix=log_postfix,
-            region_info=region_info,
-        )
+    #     all_loss_dicts = self.net.evaluate(
+    #         x,
+    #         y,
+    #         lead_times,
+    #         variables,
+    #         out_variables,
+    #         transform=self.denormalization,
+    #         metrics=[lat_weighted_mse_val, lat_weighted_rmse, lat_weighted_acc],
+    #         lat=self.lat,
+    #         clim=self.val_clim,
+    #         log_postfix=log_postfix,
+    #         region_info=region_info,
+    #     )
 
-        loss_dict = {}
-        for d in all_loss_dicts:
-            for k in d.keys():
-                loss_dict[k] = d[k]
+    #     loss_dict = {}
+    #     for d in all_loss_dicts:
+    #         for k in d.keys():
+    #             loss_dict[k] = d[k]
 
-        for var in loss_dict.keys():
-            self.log(
-                "val/" + var,
-                loss_dict[var],
-                on_step=False,
-                on_epoch=True,
-                prog_bar=False,
-                sync_dist=True,
-            )
-        return loss_dict
+    #     for var in loss_dict.keys():
+    #         self.log(
+    #             "val/" + var,
+    #             loss_dict[var],
+    #             on_step=False,
+    #             on_epoch=True,
+    #             prog_bar=False,
+    #             sync_dist=True,
+    #         )
+    #     return loss_dict
 
     def test_step(self, batch: Any, batch_idx: int):
         x, y, lead_times, variables, out_variables, region_info = batch

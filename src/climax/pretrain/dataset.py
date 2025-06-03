@@ -17,7 +17,7 @@ class NpyReader(IterableDataset):
         start_idx,
         end_idx,
         variables,
-        out_variables,
+        out_variables=None,
         shuffle: bool = False,
         multi_dataset_training=False,
     ) -> None:
@@ -47,7 +47,7 @@ class NpyReader(IterableDataset):
                 world_size = torch.distributed.get_world_size()
             num_workers_per_ddp = worker_info.num_workers
             if self.multi_dataset_training:
-                num_nodes = int(os.environ.get("NODES", None))
+                num_nodes = int(os.environ.get("NODES", "1"))
                 num_gpus_per_node = int(world_size / num_nodes)
                 num_shards = num_workers_per_ddp * num_gpus_per_node
                 rank = rank % num_gpus_per_node
@@ -66,7 +66,7 @@ class NpyReader(IterableDataset):
 
 class Forecast(IterableDataset):
     def __init__(
-        self, dataset: NpyReader, max_predict_range: int = 6, random_lead_time: bool = False, hrs_each_step: int = 1
+        self, dataset: NpyReader, max_predict_range: int = 7, random_lead_time: bool = True, hrs_each_step: int = 24
     ) -> None:
         super().__init__()
         self.dataset = dataset
@@ -76,7 +76,7 @@ class Forecast(IterableDataset):
 
     def __iter__(self):
         for data, variables, out_variables in self.dataset:
-            x = np.concatenate([data[k].astype(np.float32) for k in data.keys()], axis=1)
+            x = np.concatenate([data[k].astype(np.float32) for k in variables], axis=1)
             x = torch.from_numpy(x)
             y = np.concatenate([data[k].astype(np.float32) for k in out_variables], axis=1)
             y = torch.from_numpy(y)
@@ -84,7 +84,7 @@ class Forecast(IterableDataset):
             inputs = x[: -self.max_predict_range]  # N, C, H, W
 
             if self.random_lead_time:
-                predict_ranges = torch.randint(low=1, high=self.max_predict_range, size=(inputs.shape[0],))
+                predict_ranges = torch.randint(low=1, high=self.max_predict_range + 1, size=(inputs.shape[0],))
             else:
                 predict_ranges = torch.ones(inputs.shape[0]).to(torch.long) * self.max_predict_range
             lead_times = self.hrs_each_step * predict_ranges / 100
