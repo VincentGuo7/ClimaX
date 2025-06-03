@@ -14,7 +14,7 @@ trainer:
   strategy: ddp
 
   min_epochs: 1
-  max_epochs: 100
+  max_epochs: 50
   enable_progress_bar: true
 
   sync_batchnorm: True
@@ -108,9 +108,9 @@ data:
     "sshf", "tcc", "pev", "stl2", "tcw", "d2m", "tciw", "tcwv", 
     "tp", "cp", "cvh", "tco3", "t2m", "e", "lsp", "fg10"
   ]
-  # region: "Eastern Australia"
+  region: "Eastern Australia"
   predict_range: 7
   buffer_size: 10000
-  batch_size: 128
+  batch_size: 16
   num_workers: 1
   pin_memory: False
