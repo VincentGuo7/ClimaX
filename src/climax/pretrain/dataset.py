@@ -66,7 +66,7 @@ class NpyReader(IterableDataset):
 
 class Forecast(IterableDataset):
     def __init__(
-        self, dataset: NpyReader, max_predict_range: int = 7, random_lead_time: bool = True, hrs_each_step: int = 24
+        self, dataset: NpyReader, max_predict_range: int = 24, random_lead_time: bool = False, hrs_each_step: int = 24
     ) -> None:
         super().__init__()
         self.dataset = dataset

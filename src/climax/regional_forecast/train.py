@@ -2,6 +2,10 @@
 # Licensed under the MIT license.
 
 import os
+import numpy as np
+import torch
+from custom_evaluate import evaluate_model
+
 
 from climax.regional_forecast.datamodule import RegionalForecastDataModule
 from climax.regional_forecast.module import RegionalForecastModule
@@ -33,7 +37,7 @@ def main():
     cli.model.set_pred_range(cli.datamodule.hparams.predict_range)
 
     # Disable val/test clim constants if you want
-    cli.model.set_val_clim(None)
+    # cli.model.set_val_clim(None)
     cli.model.set_test_clim(None)
 
     # fit() runs the training
@@ -42,6 +46,30 @@ def main():
     # test the trained model
     cli.trainer.test(cli.model, datamodule=cli.datamodule, ckpt_path="best")
 
+    #Evluation Logic
+    preds, targets = [], []
+
+    cli.model.eval()
+    for batch in cli.datamodule.test_dataloader():
+        x, y = batch
+        with torch.no_grad():
+            y_hat = cli.model(x)
+        preds.append(y_hat.cpu().numpy())
+        targets.append(y.cpu().numpy())
+
+    pred_test = np.concatenate(preds, axis=0)
+    pred_test_denorm = pred_test * std_norm + mean_norm
+
+    y_test = np.concatenate(targets, axis=0)
+    y_test_denorm = y_test * std_norm + mean_norm
+
+    # Save to disk
+    os.makedirs("results", exist_ok=True)
+    np.save("results/pred_test.npy", pred_test_denorm)
+    np.save("results/y_test.npy", y_test_denorm)
+
+    #Evaluate
+    evaluate_model()
 
 if __name__ == "__main__":
     main()

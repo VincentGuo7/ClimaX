@@ -166,11 +166,7 @@ class RegionalForecastModule(LightningModule):
     def test_step(self, batch: Any, batch_idx: int):
         x, y, lead_times, variables, out_variables, region_info = batch
 
-        if self.pred_range < 24:
-            log_postfix = f"{self.pred_range}_hours"
-        else:
-            days = int(self.pred_range / 24)
-            log_postfix = f"{days}_days"
+        log_postfix = f"{self.pred_range}_days"
 
         all_loss_dicts = self.net.evaluate(
             x,

@@ -14,7 +14,7 @@ trainer:
   strategy: ddp
 
   min_epochs: 1
-  max_epochs: 50
+  max_epochs: 10
   enable_progress_bar: true
 
   sync_batchnorm: True
@@ -109,7 +109,8 @@ data:
     "tp", "cp", "cvh", "tco3", "t2m", "e", "lsp", "fg10"
   ]
   region: "Eastern Australia"
-  predict_range: 7
+  predict_range: 24
+  hrs_each_step: 24
   buffer_size: 10000
   batch_size: 16
   num_workers: 1
