@@ -190,8 +190,8 @@ data:
       "specific_humidity_925",
     ]
   out_variables: ["geopotential_500", "temperature_850", "2m_temperature", "10m_u_component_of_wind", "10m_v_component_of_wind"]
-  predict_range: 72
-  hrs_each_step: 1
+  predict_range: 24
+  hrs_each_step: 24
   buffer_size: 10000
   batch_size: 128
   num_workers: 1

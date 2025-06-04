@@ -155,13 +155,13 @@ data:
     'mpi-esm': null,
   }
   dict_max_predict_ranges: {
-    'mpi-esm': 28,
+    'mpi-esm': 24,
   }
   dict_random_lead_time: {
     'mpi-esm': True,
   }
   dict_hrs_each_step: {
-    'mpi-esm': 6,
+    'mpi-esm': 24,
   }
   dict_buffer_sizes: {
     'mpi-esm': 10000,

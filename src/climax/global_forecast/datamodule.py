@@ -41,7 +41,7 @@ class GlobalForecastDataModule(LightningDataModule):
         variables,
         buffer_size,
         out_variables=None,
-        predict_range: int = 1,
+        predict_range: int = 24,
         hrs_each_step: int = 24,
         batch_size: int = 64,
         num_workers: int = 0,
