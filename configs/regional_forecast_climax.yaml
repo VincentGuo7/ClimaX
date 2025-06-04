@@ -11,7 +11,8 @@ trainer:
   gpus: null
   num_nodes: 1
   accelerator: gpu
-  strategy: ddp
+  devices: 1
+  strategy: auto
 
   min_epochs: 1
   max_epochs: 10
