@@ -1,6 +1,8 @@
 # tags: https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch/tags?quick-deploy=false
 
-FROM nvidia/cuda:11.3.1-runtime-ubuntu20.04
+ARG BASE_IMAGE=openmpi4.1.0-cuda11.3-cudnn8-ubuntu20.04:latest
+
+FROM mcr.microsoft.com/azureml/${BASE_IMAGE}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -33,11 +35,6 @@ COPY environment.yml /tmp/environment.yml
 
 # Create environment
 ENV PATH=/opt/conda/bin:${PATH}
-
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
-    bash ~/miniconda.sh -b -p /opt/conda && \
-    rm ~/miniconda.sh && \
-    /opt/conda/bin/conda clean -afy
 
 RUN conda update -n base -y conda && \
     conda env create -f /tmp/environment.yml
