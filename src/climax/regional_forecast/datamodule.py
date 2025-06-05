@@ -72,7 +72,7 @@ class RegionalForecastDataModule(LightningDataModule):
         self.save_hyperparameters(logger=False)
 
         #Get variable titles
-        with open(os.path.join(root_dir, "weather_feature_titles.txt"), "r") as f:
+        with open(os.path.join(root_dir, "weather_features_titles.txt"), "r") as f:
             variables = [line.strip() for line in f.readlines()]
         self.hparams.variables = variables
         self.hparams.out_variables = variables
@@ -131,7 +131,7 @@ class RegionalForecastDataModule(LightningDataModule):
         lat, lon = self.get_lat_lon()
         region_info = get_region_info(self.hparams.region, lat, lon, self.patch_size)
         # load datasets only if they're not loaded already
-        if not self.data_train and not self.data_val and not self.data_test:
+        if not self.data_train and not self.data_test:
             self.data_train = ShuffleIterableDataset(
                 IndividualForecastDataIter(
                     Forecast(

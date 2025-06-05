@@ -2,17 +2,16 @@ seed_everything: 42
 
 # ---------------------------- TRAINER -------------------------------------------
 trainer:
-  default_root_dir: ${oc.env:OUTPUT_DIR,/home/t-tungnguyen/ClimaX/exps/regional_forecast_climax}
+  default_root_dir: ${oc.env:OUTPUT_DIR,/workspace/climax_logs}
 
   limit_val_batches: 0
 
   precision: 16
 
-  gpus: null
   num_nodes: 1
   accelerator: gpu
   devices: 1
-  strategy: auto
+  strategy: single_device
 
   min_epochs: 1
   max_epochs: 10

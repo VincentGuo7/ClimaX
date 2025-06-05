@@ -158,7 +158,7 @@ data:
     'mpi-esm': 24,
   }
   dict_random_lead_time: {
-    'mpi-esm': True,
+    'mpi-esm': False,
   }
   dict_hrs_each_step: {
     'mpi-esm': 24,

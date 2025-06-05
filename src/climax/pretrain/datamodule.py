@@ -61,7 +61,7 @@ class MultiSourceDataModule(LightningDataModule):
         dict_in_variables: Dict,
         dict_out_variables: Dict,
         dict_max_predict_ranges: Dict = {"mpi-esm": 24},
-        dict_random_lead_time: Dict = {"mpi-esm": True},
+        dict_random_lead_time: Dict = {"mpi-esm": False},
         dict_hrs_each_step: Dict = {"mpi-esm": 24},
         batch_size: int = 64,
         num_workers: int = 0,

@@ -85,6 +85,10 @@ BOUNDARIES = {
     'Global': { # 32, 64
         'lat_range': (-90, 90),
         'lon_range': (0, 360)
+    },
+    'Eastern Australia': {
+        'lat_range': (-44.5, -9),
+        'lon_range': (137, 154)
     }
 }
 

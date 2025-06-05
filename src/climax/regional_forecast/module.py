@@ -58,7 +58,8 @@ class RegionalForecastModule(LightningModule):
         if pretrained_path.startswith("http"):
             checkpoint = torch.hub.load_state_dict_from_url(pretrained_path)
         else:
-            checkpoint = torch.load(pretrained_path, map_location=torch.device("cpu"))
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            checkpoint = torch.load(pretrained_path, map_location=device)
 
         print("Loading pre-trained checkpoint from: %s" % pretrained_path)
         checkpoint_model = checkpoint["state_dict"]
