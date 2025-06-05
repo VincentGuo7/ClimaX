@@ -71,13 +71,8 @@ longitudes = np.sort(df['longitude'].unique())
 
 print("Processing train data...")
 train_data, train_times = pivot_to_array(train_df, feature_cols, latitudes, longitudes)
-train_t_len = len(train_times)
-
 print("Processing test data...")
 test_data, test_times = pivot_to_array(test_df, feature_cols, latitudes, longitudes)
-test_t_len = len(test_times)
-
-
 
 # Save train npz file
 train_save_path = os.path.join(train_dir, 'train_data.npz')
@@ -108,8 +103,14 @@ for year in range(2020, 2024):
     for var in feature_cols:
         arr = year_data[var]  # shape (T, 1, H, W)
         valid_values = arr[~np.isnan(arr)]
-        mean = np.mean(valid_values, axis=0)
-        std = np.std(valid_values, axis=0)
+        if valid_values.size == 0:
+            # Handle possible empty slice
+            mean = 0.0
+            std = 1.0
+        else:
+            mean = np.mean(valid_values)
+            std = np.std(valid_values)
+
         normalize_mean[var].append(mean)
         normalize_std[var].append(std)
 
@@ -118,15 +119,16 @@ final_mean = {}
 final_std = {}
 
 for var in feature_cols:
-    mean_array = np.array(normalize_mean[var], dtype=np.float32)  # shape: (years,)
-    std_array = np.array(normalize_std[var], dtype=np.float32)    # shape: (years,)
+    mean_array = np.array(normalize_mean[var], dtype=np.float32)  # (years,)
+    std_array = np.array(normalize_std[var], dtype=np.float32)    # (years,)
 
-    mean = np.mean(mean_array, axis=0)
-    variance = np.mean(std_array**2, axis=0) + np.mean(mean_array**2, axis=0) - mean**2
+    mean = np.mean(mean_array)
+    variance = np.mean(std_array ** 2) + np.mean(mean_array ** 2) - mean ** 2
     std = np.sqrt(variance)
 
-    final_mean[var] = mean.astype(np.float32)
-    final_std[var] = std.astype(np.float32)
+    # Save as 1D arrays with shape (1,) to avoid zero-dimensional scalar issue
+    final_mean[var] = np.array([mean], dtype=np.float32)
+    final_std[var] = np.array([std], dtype=np.float32)
 
 # Save final normalization
 np.savez(os.path.join(output_root_dir, 'normalize_mean.npz'), **final_mean)
