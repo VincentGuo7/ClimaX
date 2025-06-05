@@ -37,7 +37,7 @@ def main():
         max_epochs=cli.trainer.max_epochs,
     )
 
-    cli.trainer.val_check_interval = None
+    cli.trainer.val_check_interval = 1.0
 
     cli.datamodule.set_patch_size(cli.model.get_patch_size())
 

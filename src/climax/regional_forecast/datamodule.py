@@ -205,17 +205,17 @@ class RegionalForecastDataModule(LightningDataModule):
             collate_fn=collate_fn_regional,
         )
 
-    def val_dataloader(self):
-        # return DataLoader(
-        #     self.data_val,
-        #     batch_size=self.hparams.batch_size,
-        #     shuffle=False,
-        #     drop_last=False,
-        #     num_workers=self.hparams.num_workers,
-        #     pin_memory=self.hparams.pin_memory,
-        #     collate_fn=collate_fn_regional,
-        # )
-        return None
+    # def val_dataloader(self):
+    #     # return DataLoader(
+    #     #     self.data_val,
+    #     #     batch_size=self.hparams.batch_size,
+    #     #     shuffle=False,
+    #     #     drop_last=False,
+    #     #     num_workers=self.hparams.num_workers,
+    #     #     pin_memory=self.hparams.pin_memory,
+    #     #     collate_fn=collate_fn_regional,
+    #     # )
+    #     return None
 
     def test_dataloader(self):
         return DataLoader(
