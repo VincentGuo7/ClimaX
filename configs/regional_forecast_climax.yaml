@@ -18,7 +18,7 @@ trainer:
   enable_progress_bar: true
 
   sync_batchnorm: True
-  enable_checkpointing: false
+  enable_checkpointing: true
   resume_from_checkpoint: null
 
   # debugging
@@ -49,6 +49,15 @@ trainer:
     #     verbose: False
     #     filename: "epoch_{epoch:03d}"
     #     auto_insert_metric_name: False
+
+    - class_path: pytorch_lightning.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: "${trainer.default_root_dir}/checkpoints"
+        save_top_k: -1          # Save all checkpoints (optional, set to 1 to save only last)
+        save_last: true         # Always save the most recent checkpoint
+        every_n_epochs: 1       # Save every epoch
+        filename: "epoch_{epoch:03d}"
+        auto_insert_metric_name: false
 
     # - class_path: pytorch_lightning.callbacks.EarlyStopping
     #   init_args:
@@ -113,5 +122,5 @@ data:
   hrs_each_step: 24
   buffer_size: 10000
   batch_size: 16
-  num_workers: 1
+  num_workers: 0
   pin_memory: False

@@ -53,10 +53,11 @@ def main():
     cli.model.set_test_clim(None)
 
     # fit() runs the training
-    cli.trainer.fit(cli.model, datamodule=cli.datamodule)
+    ckpt_path = "last" if os.path.exists(os.path.join(cli.trainer.default_root_dir, "checkpoints", "last.ckpt")) else None
+    cli.trainer.fit(cli.model, datamodule=cli.datamodule, ckpt_path=ckpt_path)
 
     # test the trained model
-    cli.trainer.test(cli.model, datamodule=cli.datamodule, ckpt_path="best")
+    cli.trainer.test(cli.model, datamodule=cli.datamodule, ckpt_path="last")
 
     #Evluation Logic
     preds, targets = [], []
