@@ -61,8 +61,10 @@ class NpyReader(IterableDataset):
         for idx in range(iter_start, iter_end):
             path = self.file_list[idx]
             data = np.load(path)
-            yield {k: data[k] for k in self.variables}, self.variables, self.out_variables
-
+            if isinstance(data, np.lib.npyio.NpzFile):
+                yield {k: data[k] for k in self.variables}, self.variables, self.out_variables
+            else:
+                yield data.item(), self.variables, self.out_variables
 
 class Forecast(IterableDataset):
     def __init__(
