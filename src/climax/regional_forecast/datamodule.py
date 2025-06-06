@@ -138,7 +138,7 @@ class RegionalForecastDataModule(LightningDataModule):
                         NpyReader(
                             file_list=self.lister_train,
                             start_idx=0,
-                            end_idx=None,
+                            end_idx=1,
                             variables=self.hparams.variables,
                             out_variables=self.hparams.out_variables,
                             shuffle=True,
