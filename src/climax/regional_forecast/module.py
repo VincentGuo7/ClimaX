@@ -137,7 +137,7 @@ class RegionalForecastModule(LightningModule):
         all_loss_dicts = self.net.evaluate(
             x,
             y,
-            lead_times,
+            lead_times
             variables,
             out_variables,
             transform=self.denormalization,
@@ -148,12 +148,12 @@ class RegionalForecastModule(LightningModule):
             region_info=region_info,
         )
 
+        print("Validation metrics keys:", [k for d in all_loss_dicts for k in d.keys()])
+
         loss_dict = {}
         for d in all_loss_dicts:
             for k in d.keys():
                 loss_dict[k] = d[k]
-
-        print("Validation metrics:", all_loss_dicts)  # <-- add this to see keys and values
 
         for var in loss_dict.keys():
             self.log(
