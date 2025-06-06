@@ -199,7 +199,7 @@ class RegionalForecastDataModule(LightningDataModule):
         return DataLoader(
             self.data_train,
             batch_size=self.hparams.batch_size,
-            drop_last=False,
+            drop_last=True,
             num_workers=self.hparams.num_workers,
             pin_memory=self.hparams.pin_memory,
             collate_fn=collate_fn_regional,
