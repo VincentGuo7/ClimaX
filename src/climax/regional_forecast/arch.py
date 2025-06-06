@@ -29,6 +29,19 @@ class RegionalClimaX(ClimaX):
 
         # get the patch ids corresponding to the region
         region_patch_ids = region_info['patch_ids']
+
+
+######### LOOOK HEREEEEEEEEEE ############
+
+        print("x.shape:", x.shape)
+        print("region_patch_ids:", region_patch_ids)
+        print("max region_patch_ids:", region_patch_ids.max().item())
+        print("x.shape[2]:", x.shape[2])
+
+        assert region_patch_ids.max() < x.shape[2], \
+            f"region_patch_ids max index {region_patch_ids.max()} exceeds x.shape[2] {x.shape[2]}"
+####### TILL HERE #####################
+
         x = x[:, :, region_patch_ids, :]
 
         # variable aggregation
