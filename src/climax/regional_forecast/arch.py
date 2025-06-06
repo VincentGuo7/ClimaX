@@ -28,8 +28,6 @@ class RegionalClimaX(ClimaX):
         x = x + var_embed.unsqueeze(2)  # B, V, L, D
 
         # get the patch ids corresponding to the region
-        # region_patch_ids = region_info['patch_ids']
-
         min_h, max_h = region_info["min_h"], region_info["max_h"]
         min_w, max_w = region_info["min_w"], region_info["max_w"]
 
@@ -46,19 +44,6 @@ class RegionalClimaX(ClimaX):
                 patch_ids.append(patch_id)
 
         region_patch_ids = torch.tensor(patch_ids, device=x.device)
-
-
-######### LOOK HEREEEEEEEEEE ############
-        region_patch_ids = torch.tensor(region_patch_ids, device=x.device)
-
-        print("region_patch_ids:", region_patch_ids)
-        print("x.shape:", x.shape)
-        print("region_patch_ids.max():", region_patch_ids.max().item())
-        print("region_patch_ids.min():", region_patch_ids.min().item())
-
-        assert region_patch_ids.max() < x.shape[2], "region_patch_ids out of bounds"
-        assert region_patch_ids.min() >= 0, "region_patch_ids has negative index"
-####### TILL HERE #####################
 
         x = x[:, :, region_patch_ids, :]
 
