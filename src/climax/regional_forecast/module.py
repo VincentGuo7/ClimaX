@@ -236,6 +236,12 @@ class RegionalForecastModule(LightningModule):
             self.hparams.warmup_start_lr,
             self.hparams.eta_min,
         )
-        scheduler = {"scheduler": lr_scheduler, "interval": "step", "frequency": 1}
+
+        # Updated: run scheduler step per *epoch* (avoids warning)
+        scheduler = {
+            "scheduler": lr_scheduler,
+            "interval": "epoch",  # was "step", changed to avoid warning
+            "frequency": 1,
+        }
 
         return {"optimizer": optimizer, "lr_scheduler": scheduler}

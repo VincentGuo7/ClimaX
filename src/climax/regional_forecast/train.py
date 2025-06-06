@@ -62,6 +62,10 @@ def main():
 
     cli.model.eval()
     for batch in cli.datamodule.test_dataloader():
+
+        print(f"Batch length: {len(batch)}")
+        print(f"Batch content keys or types: {[type(b) for b in batch]}")
+
         x, y = batch
         with torch.no_grad():
             y_hat = cli.model(x)
