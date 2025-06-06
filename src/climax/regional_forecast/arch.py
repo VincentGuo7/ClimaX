@@ -32,14 +32,15 @@ class RegionalClimaX(ClimaX):
 
 
 ######### LOOK HEREEEEEEEEEE ############
+        region_patch_ids = torch.tensor(region_patch_ids, device=x.device)
 
-        # print("x.shape:", x.shape)
-        # print("region_patch_ids:", region_patch_ids)
-        # print("max region_patch_ids:", region_patch_ids.max().item())
-        # print("x.shape[2]:", x.shape[2])
+        print("region_patch_ids:", region_patch_ids)
+        print("x.shape:", x.shape)
+        print("region_patch_ids.max():", region_patch_ids.max().item())
+        print("region_patch_ids.min():", region_patch_ids.min().item())
 
-        # assert region_patch_ids.max() < x.shape[2], \
-        #     f"region_patch_ids max index {region_patch_ids.max()} exceeds x.shape[2] {x.shape[2]}"
+        assert region_patch_ids.max() < x.shape[2], "region_patch_ids out of bounds"
+        assert region_patch_ids.min() >= 0, "region_patch_ids has negative index"
 ####### TILL HERE #####################
 
         x = x[:, :, region_patch_ids, :]
