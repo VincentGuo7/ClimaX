@@ -28,7 +28,24 @@ class RegionalClimaX(ClimaX):
         x = x + var_embed.unsqueeze(2)  # B, V, L, D
 
         # get the patch ids corresponding to the region
-        region_patch_ids = region_info['patch_ids']
+        # region_patch_ids = region_info['patch_ids']
+
+        min_h, max_h = region_info["min_h"], region_info["max_h"]
+        min_w, max_w = region_info["min_w"], region_info["max_w"]
+
+        # Assume input was [B, V, H, W] and you patchify it by patch_size x patch_size
+        H, W = self.img_size  # or x.shape[-2:] if available
+        ph = H // self.patch_size
+        pw = W // self.patch_size
+
+        # Patchify image coordinates → token ids
+        patch_ids = []
+        for i in range(min_h // self.patch_size, (max_h + 1) // self.patch_size):
+            for j in range(min_w // self.patch_size, (max_w + 1) // self.patch_size):
+                patch_id = i * pw + j
+                patch_ids.append(patch_id)
+
+        region_patch_ids = torch.tensor(patch_ids, device=x.device)
 
 
 ######### LOOK HEREEEEEEEEEE ############
