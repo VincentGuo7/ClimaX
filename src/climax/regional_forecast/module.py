@@ -148,6 +148,8 @@ class RegionalForecastModule(LightningModule):
             region_info=region_info,
         )
 
+        print("Validation metrics:", all_loss_dicts)  # <-- add this to see keys and values
+
         loss_dict = {}
         for d in all_loss_dicts:
             for k in d.keys():
