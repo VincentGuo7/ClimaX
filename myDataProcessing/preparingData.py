@@ -6,6 +6,7 @@ input_data_path = 'era5_main_dataset_30.parquet'
 output_root_dir = 'finetuning_1.40625deg'
 
 train_dir = os.path.join(output_root_dir, 'train')
+val_dir = os.path.join(output_root_dir, 'val')
 test_dir = os.path.join(output_root_dir, 'test')
 
 columns = ['latitude', 'longitude', 'valid_time', 'stl1', 'slhf', 'u10', 'tclw', 'skt', 'msl', 'cvl',
@@ -17,6 +18,7 @@ feature_cols = [col for col in columns if col not in non_feature_cols]
 
 os.makedirs(output_root_dir, exist_ok=True)
 os.makedirs(train_dir, exist_ok=True)
+os.makedirs(val_dir, exist_ok=True)
 os.makedirs(test_dir, exist_ok=True)
 
 
@@ -29,10 +31,7 @@ def pivot_to_array(df, var_list, latitudes, longitudes):
     H = len(latitudes)
     W = len(longitudes)
 
-    # Create empty arrays
-    data_arrays = {}
-    for var in var_list:
-        data_arrays[var] = np.full((T, 1, H, W), np.nan, dtype=np.float32)
+    data_arrays = {var: np.full((T, 1, H, W), np.nan, dtype=np.float32) for var in var_list}
 
     # Map lat/lon to indices
     lat_to_idx = {lat: i for i, lat in enumerate(latitudes)}
@@ -52,15 +51,26 @@ def pivot_to_array(df, var_list, latitudes, longitudes):
 
     return data_arrays, times
 
+def compute_climatology(data):
+    return {var: np.nanmean(data[var], axis=0) for var in data}
+
+def save_data_and_climatology(name, df, out_dir):
+    data, _ = pivot_to_array(df, feature_cols, latitudes, longitudes)
+    save_path = os.path.join(out_dir, f'{name}_data.npz')
+    np.savez_compressed(save_path, **data)
+    climatology = compute_climatology(data)
+    np.savez_compressed(os.path.join(out_dir, 'climatology.npz'), **climatology)
+    print(f"Saved {name} data and climatology to {out_dir}")
 
 print("Loading dataset...")
 df = pd.read_parquet(input_data_path)
 df = df[columns]
 
-# Filter train/test by valid_time (daily timestamps)
+# Filter train/va/test by valid_time (daily timestamps)
 df['valid_time'] = pd.to_datetime(df['valid_time'])
 
-train_df = df[(df['valid_time'] >= '2020-01-01') & (df['valid_time'] <= '2023-12-31')]
+train_df = df[(df['valid_time'] >= '2020-01-01') & (df['valid_time'] < '2023-07-01')]
+val_df = df[(df['valid_time'] >= '2023-07-01') & (df['valid_time'] < '2024-01-01')]
 test_df = df[(df['valid_time'] >= '2024-01-01') & (df['valid_time'] <= '2024-12-31')]
 
 print(f"Train samples: {len(train_df)}, Test samples: {len(test_df)}")
@@ -69,23 +79,9 @@ print(f"Train samples: {len(train_df)}, Test samples: {len(test_df)}")
 latitudes = np.sort(df['latitude'].unique())
 longitudes = np.sort(df['longitude'].unique())
 
-print("Processing train data...")
-train_data, train_times = pivot_to_array(train_df, feature_cols, latitudes, longitudes)
-print("Processing test data...")
-test_data, test_times = pivot_to_array(test_df, feature_cols, latitudes, longitudes)
-
-# Save train npz file
-train_save_path = os.path.join(train_dir, 'train_data.npz')
-np.savez_compressed(train_save_path, **train_data)
-print(f"Saved training data to {train_save_path}")
-
-
-
-# Save test npz file
-test_save_path = os.path.join(test_dir, 'test_data.npz')
-np.savez_compressed(test_save_path, **test_data)
-print(f"Saved test data to {test_save_path}")
-
+save_data_and_climatology('train', train_df, train_dir)
+save_data_and_climatology('val', val_df, val_dir)
+save_data_and_climatology('test', test_df, test_dir)
 
 
 # Compute normalization (mean/std) using ClimaX's year-averaged method
@@ -94,8 +90,9 @@ normalize_std = {var: [] for var in feature_cols}
 
 print("Calculating per-year normalization statistics...")
 
-# Loop through each year in the training set
-for year in range(2020, 2024):
+train_years = train_df['valid_time'].dt.year.unique()
+
+for year in sorted(train_years):
     print(f"  Processing year {year}...")
     year_df = train_df[train_df['valid_time'].dt.year == year]
     year_data, _ = pivot_to_array(year_df, feature_cols, latitudes, longitudes)
@@ -103,14 +100,8 @@ for year in range(2020, 2024):
     for var in feature_cols:
         arr = year_data[var]  # shape (T, 1, H, W)
         valid_values = arr[~np.isnan(arr)]
-        if valid_values.size == 0:
-            # Handle possible empty slice
-            mean = 0.0
-            std = 1.0
-        else:
-            mean = np.mean(valid_values)
-            std = np.std(valid_values)
-
+        mean = np.mean(valid_values) if valid_values.size > 0 else 0.0
+        std = np.std(valid_values) if valid_values.size > 0 else 1.0
         normalize_mean[var].append(mean)
         normalize_std[var].append(std)
 

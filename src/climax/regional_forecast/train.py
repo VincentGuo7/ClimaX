@@ -47,17 +47,15 @@ def main():
     cli.model.set_denormalization(mean_denorm, std_denorm)
     cli.model.set_lat_lon(*cli.datamodule.get_lat_lon())
     cli.model.set_pred_range(cli.datamodule.hparams.predict_range)
-
-    # Disable val/test clim constants if you want
-    # cli.model.set_val_clim(None)
-    cli.model.set_test_clim(None)
+    cli.model.set_val_clim(cli.datamodule.val_clim)
+    cli.model.set_test_clim(cli.datamodule.test_clim)
 
     # fit() runs the training
     ckpt_path = "last" if os.path.exists(os.path.join(cli.trainer.default_root_dir, "checkpoints", "last.ckpt")) else None
     cli.trainer.fit(cli.model, datamodule=cli.datamodule, ckpt_path=ckpt_path)
 
     # test the trained model
-    cli.trainer.test(cli.model, datamodule=cli.datamodule, ckpt_path="last")
+    cli.trainer.test(cli.model, datamodule=cli.datamodule, ckpt_path="best")
 
     #Evluation Logic
     preds, targets = [], []

@@ -63,7 +63,7 @@ class RegionalForecastDataModule(LightningDataModule):
         predict_range: int = 24,
         hrs_each_step: int = 24,
         batch_size: int = 64,
-        num_workers: int = 4,
+        num_workers: int = 0,
         pin_memory: bool = False,
     ):
         super().__init__()
@@ -82,17 +82,17 @@ class RegionalForecastDataModule(LightningDataModule):
         #     self.hparams.out_variables = out_variables
 
         self.lister_train = list(dp.iter.FileLister(os.path.join(root_dir, "train")))
-        # self.lister_val = list(dp.iter.FileLister(os.path.join(root_dir, "val")))
+        self.lister_val = list(dp.iter.FileLister(os.path.join(root_dir, "val")))
         self.lister_test = list(dp.iter.FileLister(os.path.join(root_dir, "test")))
 
         self.transforms = self.get_normalize()
         self.output_transforms = self.get_normalize(out_variables)
 
-        # self.val_clim = self.get_climatology("val", out_variables)
-        # self.test_clim = self.get_climatology("test", out_variables)
+        self.val_clim = self.get_climatology("val", out_variables)
+        self.test_clim = self.get_climatology("test", out_variables)
 
         self.data_train: Optional[IterableDataset] = None
-        # self.data_val: Optional[IterableDataset] = None
+        self.data_val: Optional[IterableDataset] = None
         self.data_test: Optional[IterableDataset] = None
 
     def get_normalize(self, variables=None):
@@ -115,14 +115,14 @@ class RegionalForecastDataModule(LightningDataModule):
         lon = np.load(os.path.join(self.hparams.root_dir, "lon.npy"))
         return lat, lon
 
-    # def get_climatology(self, partition="val", variables=None):
-    #     path = os.path.join(self.hparams.root_dir, partition, "climatology.npz")
-    #     clim_dict = np.load(path)
-    #     if variables is None:
-    #         variables = self.hparams.variables
-    #     clim = np.concatenate([clim_dict[var] for var in variables])
-    #     clim = torch.from_numpy(clim)
-    #     return clim
+    def get_climatology(self, partition="val", variables=None):
+        path = os.path.join(self.hparams.root_dir, partition, "climatology.npz")
+        clim_dict = np.load(path)
+        if variables is None:
+            variables = self.hparams.variables
+        clim = np.concatenate([clim_dict[var] for var in variables])
+        clim = torch.from_numpy(clim)
+        return clim
 
     def set_patch_size(self, p):
         self.patch_size = p
@@ -131,14 +131,14 @@ class RegionalForecastDataModule(LightningDataModule):
         lat, lon = self.get_lat_lon()
         region_info = get_region_info(self.hparams.region, lat, lon, self.patch_size)
         # load datasets only if they're not loaded already
-        if not self.data_train and not self.data_test:
+        if not self.data_train and not self.data_val and not self.data_test:
             self.data_train = ShuffleIterableDataset(
                 IndividualForecastDataIter(
                     Forecast(
                         NpyReader(
                             file_list=self.lister_train,
                             start_idx=0,
-                            end_idx=1,
+                            end_idx=None,
                             variables=self.hparams.variables,
                             out_variables=self.hparams.out_variables,
                             shuffle=True,
@@ -155,25 +155,25 @@ class RegionalForecastDataModule(LightningDataModule):
                 buffer_size=self.hparams.buffer_size,
             )
 
-            # self.data_val = IndividualForecastDataIter(
-            #     Forecast(
-            #         NpyReader(
-            #             file_list=self.lister_val,
-            #             start_idx=0,
-            #             end_idx=1,
-            #             variables=self.hparams.variables,
-            #             out_variables=self.hparams.out_variables,
-            #             shuffle=False,
-            #             multi_dataset_training=False,
-            #         ),
-            #         max_predict_range=self.hparams.predict_range,
-            #         random_lead_time=False,
-            #         hrs_each_step=self.hparams.hrs_each_step,
-            #     ),
-            #     transforms=self.transforms,
-            #     output_transforms=self.output_transforms,
-            #     region_info=region_info
-            # )
+            self.data_val = IndividualForecastDataIter(
+                Forecast(
+                    NpyReader(
+                        file_list=self.lister_val,
+                        start_idx=0,
+                        end_idx=1,
+                        variables=self.hparams.variables,
+                        out_variables=self.hparams.out_variables,
+                        shuffle=False,
+                        multi_dataset_training=False,
+                    ),
+                    max_predict_range=self.hparams.predict_range,
+                    random_lead_time=False,
+                    hrs_each_step=self.hparams.hrs_each_step,
+                ),
+                transforms=self.transforms,
+                output_transforms=self.output_transforms,
+                region_info=region_info
+            )
 
             self.data_test = IndividualForecastDataIter(
                 Forecast(
@@ -205,17 +205,16 @@ class RegionalForecastDataModule(LightningDataModule):
             collate_fn=collate_fn_regional,
         )
 
-    # def val_dataloader(self):
-    #     # return DataLoader(
-    #     #     self.data_val,
-    #     #     batch_size=self.hparams.batch_size,
-    #     #     shuffle=False,
-    #     #     drop_last=False,
-    #     #     num_workers=self.hparams.num_workers,
-    #     #     pin_memory=self.hparams.pin_memory,
-    #     #     collate_fn=collate_fn_regional,
-    #     # )
-    #     return None
+    def val_dataloader(self):
+        return DataLoader(
+            self.data_val,
+            batch_size=self.hparams.batch_size,
+            shuffle=False,
+            drop_last=False,
+            num_workers=self.hparams.num_workers,
+            pin_memory=self.hparams.pin_memory,
+            collate_fn=collate_fn_regional,
+        )
 
     def test_dataloader(self):
         return DataLoader(
