@@ -47,7 +47,7 @@ trainer:
         save_top_k: 1 # save k best models (determined by above metric)
         save_last: True # additionaly always save model from last epoch
         verbose: False
-        filename: "epoch_{epoch:03d}"
+        filename: "best"
         auto_insert_metric_name: False
 
     # - class_path: pytorch_lightning.callbacks.EarlyStopping
