@@ -94,7 +94,7 @@ model:
         "tcc", "pev", "stl2", "tcw", "d2m", "tciw", "tcwv", "tp", 
         "cp", "cvh", "tco3", "t2m", "e", "lsp", "fg10"
       ]
-      img_size: [32, 64]
+      img_size: [143, 69]
       patch_size: 2
       embed_dim: 1024
       depth: 8
