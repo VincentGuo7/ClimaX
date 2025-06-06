@@ -7,6 +7,7 @@ from climax.arch import ClimaX
 class RegionalClimaX(ClimaX):
     def __init__(self, default_vars, img_size=..., patch_size=2, embed_dim=1024, depth=8, decoder_depth=2, num_heads=16, mlp_ratio=4, drop_path=0.1, drop_rate=0.1):
         super().__init__(default_vars, img_size, patch_size, embed_dim, depth, decoder_depth, num_heads, mlp_ratio, drop_path, drop_rate)
+        # self.encoder.gradient_checkpointing = True
 
     def forward_encoder(self, x: torch.Tensor, lead_times: torch.Tensor, variables, region_info):
         # x: `[B, V, H, W]` shape.
