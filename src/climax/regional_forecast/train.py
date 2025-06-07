@@ -57,43 +57,43 @@ def main():
     # test the trained model
     cli.trainer.test(cli.model, datamodule=cli.datamodule, ckpt_path=None)
 
-    #Evluation Logic
-    preds, targets = [], []
+    # #Evluation Logic
+    # preds, targets = [], []
 
-    cli.model.eval()
+    # cli.model.eval()
 
-    print(f"Number of test batches: {len(cli.datamodule.test_dataloader())}")
-    print(f"Test dataset size: {len(cli.datamodule.test_dataset)}")
+    # print(f"Number of test batches: {len(cli.datamodule.test_dataloader())}")
+    # print(f"Test dataset size: {len(cli.datamodule.test_dataset)}")
 
-    for batch in cli.datamodule.test_dataloader():
-        x, y, lead_times, variables, out_variables, region_info = batch
-        with torch.no_grad():
-            loss, y_hat = cli.model.net.forward(
-                x,
-                y,
-                lead_times,
-                variables,
-                out_variables,
-                metric=None,          # probably None during pure inference
-                lat=cli.model.lat,    # or cli.model.lat (set earlier in main)
-                region_info=region_info
-            )
-        preds.append(y_hat.cpu().numpy())
-        targets.append(y.cpu().numpy())
+    # for batch in cli.datamodule.test_dataloader():
+    #     x, y, lead_times, variables, out_variables, region_info = batch
+    #     with torch.no_grad():
+    #         loss, y_hat = cli.model.net.forward(
+    #             x,
+    #             y,
+    #             lead_times,
+    #             variables,
+    #             out_variables,
+    #             metric=None,          # probably None during pure inference
+    #             lat=cli.model.lat,    # or cli.model.lat (set earlier in main)
+    #             region_info=region_info
+    #         )
+    #     preds.append(y_hat.cpu().numpy())
+    #     targets.append(y.cpu().numpy())
 
-    pred_test = np.concatenate(preds, axis=0)
-    pred_test_denorm = pred_test * std_norm + mean_norm
+    # pred_test = np.concatenate(preds, axis=0)
+    # pred_test_denorm = pred_test * std_norm + mean_norm
 
-    y_test = np.concatenate(targets, axis=0)
-    y_test_denorm = y_test * std_norm + mean_norm
+    # y_test = np.concatenate(targets, axis=0)
+    # y_test_denorm = y_test * std_norm + mean_norm
 
-    # Save to disk
-    os.makedirs("results", exist_ok=True)
-    np.save("results/pred_test.npy", pred_test_denorm)
-    np.save("results/y_test.npy", y_test_denorm)
+    # # Save to disk
+    # os.makedirs("results", exist_ok=True)
+    # np.save("results/pred_test.npy", pred_test_denorm)
+    # np.save("results/y_test.npy", y_test_denorm)
 
-    #Evaluate
-    evaluate_model()
+    # #Evaluate
+    # evaluate_model()
 
 if __name__ == "__main__":
     main()
