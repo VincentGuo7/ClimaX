@@ -26,7 +26,7 @@ def limit_gpu_memory(fraction: float = 0.5, device: int = 0):
 
 def main():
         
-    limit_gpu_memory(0.5, device=0) 
+    limit_gpu_memory(0.8, device=0) 
 
     # Initialize Lightning with the model and data modules, and instruct it to parse the config yml
     cli = LightningCLI(
