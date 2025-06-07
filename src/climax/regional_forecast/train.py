@@ -62,13 +62,18 @@ def main():
 
     cli.model.eval()
     for batch in cli.datamodule.test_dataloader():
-
-        print(f"Batch length: {len(batch)}")
-        print(f"Batch content keys or types: {[type(b) for b in batch]}")
-
-        x, y = batch
+        x, y, lead_times, variables, out_variables, region_info = batch
         with torch.no_grad():
-            y_hat = cli.model(x)
+            loss, y_hat = cli.model.net.forward(
+                x,
+                y,
+                lead_times,
+                variables,
+                out_variables,
+                metric=None,          # probably None during pure inference
+                lat=cli.model.lat,    # or cli.model.lat (set earlier in main)
+                region_info=region_info
+            )
         preds.append(y_hat.cpu().numpy())
         targets.append(y.cpu().numpy())
 
