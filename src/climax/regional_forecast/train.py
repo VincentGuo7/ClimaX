@@ -61,6 +61,10 @@ def main():
     preds, targets = [], []
 
     cli.model.eval()
+
+    print(f"Number of test batches: {len(cli.datamodule.test_dataloader())}")
+    print(f"Test dataset size: {len(cli.datamodule.test_dataset)}")
+
     for batch in cli.datamodule.test_dataloader():
         x, y, lead_times, variables, out_variables, region_info = batch
         with torch.no_grad():
