@@ -55,7 +55,7 @@ def main():
     cli.trainer.fit(cli.model, datamodule=cli.datamodule, ckpt_path=ckpt_path)
 
     # test the trained model
-    cli.trainer.test(cli.model, datamodule=cli.datamodule, ckpt_path="best")
+    cli.trainer.test(cli.model, datamodule=cli.datamodule, ckpt_path=None)
 
     #Evluation Logic
     preds, targets = [], []
