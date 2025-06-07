@@ -112,6 +112,6 @@ data:
   predict_range: 24
   hrs_each_step: 24
   buffer_size: 10000
-  batch_size: 8
+  batch_size: 4
   num_workers: 3
   pin_memory: False
