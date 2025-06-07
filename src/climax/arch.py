@@ -7,12 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from timm.models.vision_transformer import Block, PatchEmbed, trunc_normal_
-
-from climax.utils.pos_embed import (
-    get_1d_sincos_pos_embed_from_grid,
-    get_2d_sincos_pos_embed,
-)
-
+from climax.utils.pos_embed import get_1d_sincos_pos_embed_from_grid, get_2d_sincos_pos_embed
 from .parallelpatchembed import ParallelVarPatchEmbed
 
 
@@ -60,9 +55,9 @@ class ClimaX(nn.Module):
             self.token_embeds = ParallelVarPatchEmbed(len(default_vars), img_size, patch_size, embed_dim)
             self.num_patches = self.token_embeds.num_patches
         else:
-            self.token_embeds = nn.ModuleList(
-                [PatchEmbed(img_size, patch_size, 1, embed_dim) for i in range(len(default_vars))]
-            )
+            self.token_embeds = nn.ModuleList([
+                PatchEmbed(img_size, patch_size, 1, embed_dim) for _ in range(len(default_vars))
+            ])
             self.num_patches = self.token_embeds[0].num_patches
 
         # variable embedding to denote which variable each token belongs to
@@ -81,30 +76,18 @@ class ClimaX(nn.Module):
 
         # ViT backbone
         self.pos_drop = nn.Dropout(p=drop_rate)
-        dpr = [x.item() for x in torch.linspace(0, drop_path, depth)]  # stochastic depth decay rule
-        self.blocks = nn.ModuleList(
-            [
-                Block(
-                    embed_dim,
-                    num_heads,
-                    mlp_ratio,
-                    qkv_bias=True,
-                    drop_path=dpr[i],
-                    norm_layer=nn.LayerNorm,
-                    drop=drop_rate,
-                )
-                for i in range(depth)
-            ]
-        )
+        dpr = [x.item() for x in torch.linspace(0, drop_path, depth)]
+        self.blocks = nn.ModuleList([
+            Block(embed_dim, num_heads, mlp_ratio, qkv_bias=True, drop_path=dpr[i],
+                  norm_layer=nn.LayerNorm, drop=drop_rate) for i in range(depth)
+        ])
         self.norm = nn.LayerNorm(embed_dim)
 
-        # --------------------------------------------------------------------------
-
-        # prediction head
         self.head = nn.ModuleList()
         for _ in range(decoder_depth):
             self.head.append(nn.Linear(embed_dim, embed_dim))
             self.head.append(nn.GELU())
+        # Match prediction output size to number of output variables used in finetuning
         self.head.append(nn.Linear(embed_dim, len(self.default_vars) * patch_size**2))
         self.head = nn.Sequential(*self.head)
 
@@ -149,15 +132,9 @@ class ClimaX(nn.Module):
 
     def create_var_embedding(self, dim):
         var_embed = nn.Parameter(torch.zeros(1, len(self.default_vars), dim), requires_grad=True)
-        # TODO: create a mapping from var --> idx
-        var_map = {}
-        idx = 0
-        for var in self.default_vars:
-            var_map[var] = idx
-            idx += 1
+        var_map = {var: idx for idx, var in enumerate(self.default_vars)}
         return var_embed, var_map
 
-    @lru_cache(maxsize=None)
     def get_var_ids(self, vars, device):
         ids = np.array([self.var_map[var] for var in vars])
         return torch.from_numpy(ids).to(device)
@@ -224,12 +201,9 @@ class ClimaX(nn.Module):
 
         # add pos embedding
         x = x + self.pos_embed
-
         # add lead time embedding
-        lead_time_emb = self.lead_time_embed(lead_times.unsqueeze(-1))  # B, D
-        lead_time_emb = lead_time_emb.unsqueeze(1)
-        x = x + lead_time_emb  # B, L, D
-
+        lead_time_emb = self.lead_time_embed(lead_times.unsqueeze(-1))
+        x = x + lead_time_emb.unsqueeze(1)
         x = self.pos_drop(x)
 
         # apply Transformer blocks
@@ -258,11 +232,7 @@ class ClimaX(nn.Module):
         out_var_ids = self.get_var_ids(tuple(out_variables), preds.device)
         preds = preds[:, out_var_ids]
 
-        if metric is None:
-            loss = None
-        else:
-            loss = [m(preds, y, out_variables, lat) for m in metric]
-
+        loss = [m(preds, y, out_variables, lat) for m in metric] if metric else None
         return loss, preds
 
     def evaluate(self, x, y, lead_times, variables, out_variables, transform, metrics, lat, clim, log_postfix):
