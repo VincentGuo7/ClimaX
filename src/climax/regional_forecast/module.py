@@ -249,3 +249,12 @@ class RegionalForecastModule(LightningModule):
         }
 
         return {"optimizer": optimizer, "lr_scheduler": scheduler}
+    
+    def on_train_epoch_end(self):
+        torch.cuda.empty_cache()
+
+    def on_validation_epoch_end(self):
+        torch.cuda.empty_cache()
+
+    def on_test_epoch_end(self):
+        torch.cuda.empty_cache()

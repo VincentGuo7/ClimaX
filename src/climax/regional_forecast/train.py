@@ -11,8 +11,23 @@ from climax.regional_forecast.datamodule import RegionalForecastDataModule
 from climax.regional_forecast.module import RegionalForecastModule
 from pytorch_lightning.cli import LightningCLI
 
+def limit_gpu_memory(fraction: float = 0.5, device: int = 0):
+    """
+    Limit GPU memory allocation to a fraction of total GPU memory.
+
+    Args:
+        fraction (float): Fraction of GPU memory to allocate (0 < fraction <= 1).
+        device (int): CUDA device ID (default 0).
+    """
+    if torch.cuda.is_available():
+        torch.cuda.set_per_process_memory_fraction(fraction, device=device)
+        print(f"Set GPU memory limit to {fraction*100:.0f}% on device {device}")
+
 
 def main():
+        
+    limit_gpu_memory(0.5, device=0) 
+
     # Initialize Lightning with the model and data modules, and instruct it to parse the config yml
     cli = LightningCLI(
         model_class=RegionalForecastModule,
