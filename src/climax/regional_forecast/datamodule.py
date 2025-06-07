@@ -124,9 +124,9 @@ class RegionalForecastDataModule(LightningDataModule):
         self.patch_size = p
 
     def setup(self, stage: Optional[str] = None):
-        self.lister_train = list(dp.iter.FileLister(os.path.join(root_dir, "train")))
-        self.lister_val = list(dp.iter.FileLister(os.path.join(root_dir, "val")))
-        self.lister_test = list(dp.iter.FileLister(os.path.join(root_dir, "test")))
+        self.lister_train = list(dp.iter.FileLister(os.path.join(self.hparams.root_dir, "train")))
+        self.lister_val = list(dp.iter.FileLister(os.path.join(self.hparams.root_dir, "val")))
+        self.lister_test = list(dp.iter.FileLister(os.path.join(self.hparams.root_dir, "test")))
         print("Lister test:", self.lister_test)
     
         lat, lon = self.get_lat_lon()
