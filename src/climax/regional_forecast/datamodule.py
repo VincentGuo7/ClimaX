@@ -81,11 +81,6 @@ class RegionalForecastDataModule(LightningDataModule):
         #     out_variables = [out_variables]
         #     self.hparams.out_variables = out_variables
 
-        self.lister_train = list(dp.iter.FileLister(os.path.join(root_dir, "train")))
-        self.lister_val = list(dp.iter.FileLister(os.path.join(root_dir, "val")))
-        self.lister_test = list(dp.iter.FileLister(os.path.join(root_dir, "test")))
-        print("Lister test:", self.lister_test)
-
         self.transforms = self.get_normalize()
         self.output_transforms = self.get_normalize(out_variables)
 
@@ -129,6 +124,11 @@ class RegionalForecastDataModule(LightningDataModule):
         self.patch_size = p
 
     def setup(self, stage: Optional[str] = None):
+        self.lister_train = list(dp.iter.FileLister(os.path.join(root_dir, "train")))
+        self.lister_val = list(dp.iter.FileLister(os.path.join(root_dir, "val")))
+        self.lister_test = list(dp.iter.FileLister(os.path.join(root_dir, "test")))
+        print("Lister test:", self.lister_test)
+    
         lat, lon = self.get_lat_lon()
         region_info = get_region_info(self.hparams.region, lat, lon, self.patch_size)
         # load datasets only if they're not loaded already
