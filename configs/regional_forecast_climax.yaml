@@ -88,7 +88,7 @@ model:
       img_size: [143, 69]
       patch_size: 2
       embed_dim: 512
-      depth: 6
+      depth: 8
       decoder_depth: 2
       num_heads: 16
       mlp_ratio: 4
@@ -112,6 +112,6 @@ data:
   predict_range: 24
   hrs_each_step: 24
   buffer_size: 10000
-  batch_size: 4
-  num_workers: 3
+  batch_size: 8
+  num_workers: 0
   pin_memory: False
