@@ -38,7 +38,7 @@ def check_npz_file(npz_path):
     print("\nCheck completed.")
 
 def main():    
-    npz_path = "finetuning_1.40625deg/train/2020_1.npz"
+    npz_path = "finetuning_1.40625deg/val/climatology.npz"
     check_npz_file(npz_path)
 
 

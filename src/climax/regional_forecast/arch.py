@@ -99,13 +99,27 @@ class RegionalClimaX(ClimaX):
 
         return loss, preds
 
-    def evaluate(self, x, y, lead_times, variables, out_variables, transform, metrics, lat, clim, log_postfix, region_info):
-        _, preds = self.forward(x, y, lead_times, variables, out_variables, metric=None, lat=lat, region_info=region_info)
+def evaluate(self, x, y, lead_times, variables, out_variables, transform, metrics, lat, clim, log_postfix, region_info):
+    _, preds = self.forward(x, y, lead_times, variables, out_variables, metric=None, lat=lat, region_info=region_info)
 
-        min_h, max_h = region_info['min_h'], region_info['max_h']
-        min_w, max_w = region_info['min_w'], region_info['max_w']
-        y = y[:, :, min_h:max_h+1, min_w:max_w+1]
-        lat = lat[min_h:max_h+1]
-        clim = clim[:, min_h:max_h+1, min_w:max_w+1]
+    min_h, max_h = region_info['min_h'], region_info['max_h']
+    min_w, max_w = region_info['min_w'], region_info['max_w']
+    y = y[:, :, min_h:max_h+1, min_w:max_w+1]
+    lat = lat[min_h:max_h+1]
+    clim = clim[:, min_h:max_h+1, min_w:max_w+1]
 
-        return [m(preds, y, transform, out_variables, lat, clim, log_postfix) for m in metrics]
+    # Ensure lat and clim are tensors on the same device as preds
+    device = preds.device
+
+    if not isinstance(lat, torch.Tensor):
+        lat = torch.tensor(lat, device=device)
+    else:
+        lat = lat.to(device)
+
+    if not isinstance(clim, torch.Tensor):
+        clim = torch.tensor(clim, device=device)
+    else:
+        clim = clim.to(device)
+
+    # Now metrics can safely use lat and clim on correct device
+    return [m(preds, y, transform, out_variables, lat, clim, log_postfix) for m in metrics]

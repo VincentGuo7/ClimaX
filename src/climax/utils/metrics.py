@@ -96,33 +96,34 @@ def lat_weighted_mse_val(pred, y, transform, vars, lat, clim, log_postfix):
 
 
 def lat_weighted_rmse(pred, y, transform, vars, lat, clim, log_postfix):
-    """Latitude weighted root mean squared error
-
-    Args:
-        y: [B, V, H, W]
-        pred: [B, V, H, W]
-        vars: list of variable names
-        lat: H
-    """
+    """Latitude weighted root mean squared error"""
 
     pred = transform(pred)
     y = transform(y)
 
     error = (pred - y) ** 2  # [B, V, H, W]
 
-    # lattitude weights
-    w_lat = np.cos(np.deg2rad(lat))
+    # Ensure lat is tensor on correct device and dtype
+    if not isinstance(lat, torch.Tensor):
+        lat = torch.tensor(lat, device=error.device, dtype=error.dtype)
+    else:
+        lat = lat.to(device=error.device, dtype=error.dtype)
+
+    # latitude weights
+    w_lat = torch.cos(torch.deg2rad(lat))
     w_lat = w_lat / w_lat.mean()  # (H, )
-    w_lat = torch.from_numpy(w_lat).unsqueeze(0).unsqueeze(-1).to(dtype=error.dtype, device=error.device)
+    w_lat = w_lat.unsqueeze(0).unsqueeze(-1)  # shape [1, H, 1]
 
     loss_dict = {}
     with torch.no_grad():
         for i, var in enumerate(vars):
+            # broadcast w_lat across batch and width dimension
+            weighted_error = error[:, i] * w_lat  # [B, H, W]
             loss_dict[f"w_rmse_{var}_{log_postfix}"] = torch.mean(
-                torch.sqrt(torch.mean(error[:, i] * w_lat, dim=(-2, -1)))
+                torch.sqrt(torch.mean(weighted_error, dim=(-2, -1)))
             )
 
-    loss_dict["w_rmse"] = torch.stack([loss_dict[k] for k in loss_dict if k.startswith("w_rmse_")]).mean()
+    loss_dict["w_rmse"] = torch.mean(torch.stack([loss_dict[k] for k in loss_dict.keys()]))
 
     return loss_dict
 
