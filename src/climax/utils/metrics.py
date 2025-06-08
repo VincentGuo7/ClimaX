@@ -122,7 +122,7 @@ def lat_weighted_rmse(pred, y, transform, vars, lat, clim, log_postfix):
                 torch.sqrt(torch.mean(error[:, i] * w_lat, dim=(-2, -1)))
             )
 
-    loss_dict["w_rmse"] = np.mean([loss_dict[k].cpu() for k in loss_dict.keys()])
+    loss_dict["w_rmse"] = torch.stack([loss_dict[k] for k in loss_dict if k.startswith("w_rmse_")]).mean()
 
     return loss_dict
 

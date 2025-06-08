@@ -148,7 +148,6 @@ class RegionalForecastModule(LightningModule):
             region_info=region_info,
         )
 
-        print("Validation metrics keys:", [k for d in all_loss_dicts for k in d.keys()])
 
         loss_dict = {}
         for d in all_loss_dicts:
@@ -166,6 +165,11 @@ class RegionalForecastModule(LightningModule):
                 prog_bar=False,
                 sync_dist=True,
             )
+
+        print("Logging these metrics:", loss_dict)
+        for k, v in loss_dict.items():
+            print(f"{k}: {type(v)} - {v.shape if isinstance(v, torch.Tensor) else 'scalar'}")
+
         return loss_dict
 
     def test_step(self, batch: Any, batch_idx: int):
@@ -253,8 +257,17 @@ class RegionalForecastModule(LightningModule):
     def on_train_epoch_end(self):
         torch.cuda.empty_cache()
 
-    def on_validation_epoch_end(self):
-        torch.cuda.empty_cache()
+    def validation_epoch_end(self, outputs):
+        # Aggregate metrics
+        combined = {}
+        for out in outputs:
+            for k, v in out.items():
+                if k not in combined:
+                    combined[k] = []
+                combined[k].append(v)
+        for k in combined:
+            combined[k] = torch.stack(combined[k]).mean()
+            self.log(k, combined[k], prog_bar=True, sync_dist=True)
 
     def on_test_epoch_end(self):
         torch.cuda.empty_cache()
