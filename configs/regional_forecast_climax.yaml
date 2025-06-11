@@ -74,7 +74,7 @@ model:
   max_epochs: 100000
   warmup_start_lr: 1e-8
   eta_min: 1e-8
-  pretrained_path: /home/vincent.guo/ClimaX/pretrained_checkpoints/1.40625deg.ckpt
+  pretrained_path: /pretrained_checkpoints/1.40625deg.ckpt
 
   net:
     class_path: climax.regional_forecast.arch.RegionalClimaX
@@ -97,7 +97,7 @@ model:
 
 # ---------------------------- DATA -------------------------------------------
 data:
-  root_dir: /home/vincent.guo/ClimaX/finetuning_1.40625deg/
+  root_dir: /finetuning_1.40625deg/
   variables: ["stl1", "slhf", "u10", "tclw", "skt", "msl", "cvl", 
     "v10", "str", "tcrw", "sp", "ssr", "tcsw", "cbh", "sshf", 
     "tcc", "pev", "stl2", "tcw", "d2m", "tciw", "tcwv", "tp", 
